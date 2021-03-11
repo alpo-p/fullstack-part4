@@ -2,8 +2,7 @@ POST http://localhost:3003/api/blogs
 Content-Type: application/json
 
 {
-    "title": "How to fix your motorcycle",
-    "author": "Alexi Laiho",
-    "url": "www.bodom.io",
-    "likes": "715517"
+    "title": "Testi",
+    "author": "Baloo",
+    "url": "www.viidakkokirja.io"
 }
