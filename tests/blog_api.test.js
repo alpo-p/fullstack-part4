@@ -54,7 +54,8 @@ test('a valid blog can be added', async () => {
         title: 'lorem ipsum',
         author: 'Elon Musk',
         url: 'tesla.com',
-        likes: 42
+        likes: 42,
+        userId: '604b5733f151dc6b371cd864'
     }
 
     await api
@@ -82,7 +83,8 @@ test('if likes property is missing, value defaults to 0', async () => {
     const newBlog = {
         title: 'lorem ipsum',
         author: 'Joe Rogan',
-        url: 'JRE'
+        url: 'JRE',
+        userId: '604b5733f151dc6b371cd864'
     }
 
     const response = await api
@@ -95,7 +97,8 @@ test('if likes property is missing, value defaults to 0', async () => {
 test('if title and url are missing, returns 400 Bad Request', async () => {
     const newBlog = {
         author: 'Monty Python',
-        likes: 42
+        likes: 42,
+        userId: '604b5733f151dc6b371cd864'
     }
 
     await api
