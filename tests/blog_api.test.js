@@ -6,7 +6,7 @@ const Blog = require('../models/blog')
 
 const initialBlogs = [
     {
-        id: '6048bc84c7631d308b8d84e6',
+        _id: '6048bc84c7631d308b8d84e6',
         title: 'Fullstack',
         author: 'Alpo Panula',
         url: 'www.alpo.io',
@@ -14,7 +14,7 @@ const initialBlogs = [
         __v: 0
     },
     {
-        id: '6048c919ff4ed455232bd47a',
+        _id: '6048c919ff4ed455232bd47a',
         title: 'How to fix your motorcycle',
         author: 'Alexi Laiho',
         url: 'www.bodom.io',
@@ -90,6 +90,57 @@ test('if likes property is missing, value defaults to 0', async () => {
         .send(newBlog)
     
     expect(response.body.likes).toBe(0)
+})
+
+test('if title and url are missing, returns 400 Bad Request', async () => {
+    const newBlog = {
+        author: 'Monty Python',
+        likes: 42
+    }
+
+    await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(400)
+})
+
+describe('deletion of a note', () => {
+    test('succeeds with status code 204 if id is valid', async () => {
+        const blogsAtStart = await Blog.find({})
+        const blogToDelete = blogsAtStart[0]
+
+        await api
+            .delete(`/api/blogs/${blogToDelete.id}`)
+            .expect(204)
+
+        const blogsAtEnd = await Blog.find({})
+        expect(blogsAtEnd).toHaveLength(blogsAtStart.length - 1)
+    })
+
+    test('fails with status code 404 if id is invalid', async () => {
+        const blogsAtStart = await Blog.find({})
+        const blogToDelete = blogsAtStart[0]
+
+        await api
+            .delete(`/api/blogs/${blogToDelete.id+1}`)
+            .expect(404)
+    })
+})
+
+test('updating of likes succeeds with correct likes and status code', async () => {
+    const blogAtStart = initialBlogs[0]
+    const id = blogAtStart._id
+    const initialLikes = blogAtStart.likes
+
+    const editedBlog = { ...blogAtStart, likes: initialLikes + 1}
+
+    await api
+        .put(`/api/blogs/${id}`)
+        .send(editedBlog)
+        .expect(204)
+    
+    const blogAtEnd = await Blog.findById(id)
+    expect(blogAtEnd.likes).toBe(initialLikes + 1)
 })
 
 afterAll(() => {
