@@ -3,6 +3,8 @@ const supertest = require('supertest')
 const app = require('../app')
 const api = supertest(app)
 const Blog = require('../models/blog')
+const User = require('../models/user')
+const bcrypt = require('bcrypt')
 
 const initialBlogs = [
     {
@@ -22,6 +24,7 @@ const initialBlogs = [
         __v: 0
     }
 ]
+
 beforeEach(async () => {
     await Blog.deleteMany({})
 
@@ -29,6 +32,7 @@ beforeEach(async () => {
         let blogObject = new Blog(blog)
         await blogObject.save()
     }
+
 })
 
 test('blogs are returned as json', async () => {
@@ -49,84 +53,79 @@ test('the first title is Fullstack', async () => {
     expect(response.body[0].title).toBe('Fullstack')
 })
 
-test('a valid blog can be added', async () => {
-    const newBlog = {
-        title: 'lorem ipsum',
-        author: 'Elon Musk',
-        url: 'tesla.com',
-        likes: 42,
-        userId: '604b5733f151dc6b371cd864'
-    }
-
-    await api
-        .post('/api/blogs')
-        .send(newBlog)
-        .expect(201)
-        .expect('Content-Type', /application\/json/)
-
-    const response = await api.get('/api/blogs')
-    
-    const author = response.body.map(r => r.author)
-
-    expect(response.body).toHaveLength(initialBlogs.length + 1)
-    expect(author).toContain('Elon Musk')
-})
-
-test('a unique identifier property is named id', async () => {
-    const response = await api.get('/api/blogs')
-    response.body.forEach(blog => {
-        expect(blog.id).toBeDefined()
-    })
-})
-
-test('if likes property is missing, value defaults to 0', async () => {
-    const newBlog = {
-        title: 'lorem ipsum',
-        author: 'Joe Rogan',
-        url: 'JRE',
-        userId: '604b5733f151dc6b371cd864'
-    }
-
-    const response = await api
-        .post('/api/blogs')
-        .send(newBlog)
-    
-    expect(response.body.likes).toBe(0)
-})
-
-test('if title and url are missing, returns 400 Bad Request', async () => {
-    const newBlog = {
-        author: 'Monty Python',
-        likes: 42,
-        userId: '604b5733f151dc6b371cd864'
-    }
-
-    await api
-        .post('/api/blogs')
-        .send(newBlog)
-        .expect(400)
-})
-
-describe('deletion of a note', () => {
-    test('succeeds with status code 204 if id is valid', async () => {
-        const blogsAtStart = await Blog.find({})
-        const blogToDelete = blogsAtStart[0]
-
-        await api
-            .delete(`/api/blogs/${blogToDelete.id}`)
-            .expect(204)
-
-        const blogsAtEnd = await Blog.find({})
-        expect(blogsAtEnd).toHaveLength(blogsAtStart.length - 1)
+describe('blog adding works: ', () => {
+    const userCreds = { username: 'baloo', password: 'sekret' }
+    let token
+    beforeEach(async () => {
+        await User.deleteMany({})
+        
+        const passwordHash = await bcrypt.hash('sekret', 10)
+        const user = new User({ username: 'baloo', passwordHash })
+        await user.save()
+        
+        const login = await api
+            .post('/api/login')
+            .send(userCreds)
+        token = `bearer ${login.body.token}`
     })
 
-    test('fails with status code 404 if id is invalid', async () => {
-        const blogsAtStart = await Blog.find({})
-        const blogToDelete = blogsAtStart[0]
 
+    test('a valid blog can be added', async () => {
+        const newBlog = {
+            title: 'lorem ipsum',
+            author: 'Elon Musk',
+            url: 'tesla.com',
+            likes: 42,
+        }
+    
         await api
-            .delete(`/api/blogs/${blogToDelete.id+1}`)
-            .expect(404)
+            .post('/api/blogs')
+            .set('Authorization', token)
+            .send(newBlog)
+            .expect(201)
+            .expect('Content-Type', /application\/json/)
+    
+        const response = await api.get('/api/blogs')
+        
+        const author = response.body.map(r => r.author)
+    
+        expect(response.body).toHaveLength(initialBlogs.length + 1)
+        expect(author).toContain('Elon Musk')
+    })
+    
+    test('a unique identifier property is named id', async () => {
+        const response = await api.get('/api/blogs')
+        response.body.forEach(blog => {
+            expect(blog.id).toBeDefined()
+        })
+    })
+    
+    test('if likes property is missing, value defaults to 0', async () => {
+        const newBlog = {
+            title: 'lorem ipsum',
+            author: 'Joe Rogan',
+            url: 'JRE'
+        }
+    
+        const response = await api
+            .post('/api/blogs')
+            .set('Authorization', token)
+            .send(newBlog)
+        
+        expect(response.body.likes).toBe(0)
+    })
+    
+    test('if title and url are missing, returns 400 Bad Request', async () => {
+        const newBlog = {
+            author: 'Monty Python',
+            likes: 42,
+        }
+    
+        await api
+            .post('/api/blogs')
+            .set('Authorization', token)
+            .send(newBlog)
+            .expect(400)
     })
 })
 
