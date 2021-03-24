@@ -3,13 +3,13 @@ Content-Type: application/json
 Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFscG8iLCJpZCI6IjYwNGI0YjA2OWM3MmEyNTlmMjFjOTAwOSIsImlhdCI6MTYxNTU1Mjg3MX0.RSIsffuvv4aW7AyYy-zhCipz_Eq2iAAgqN_8cQYPFvk
 
 {
-    "title": "blogii4",
-    "author": "Testi",
-    "url": "www.viidakkokirja.io",
-    "likes": 11
+    "title": "Saaristossa asuminen ja eläminen",
+    "author": "Svennu",
+    "url": "www.bolax.fi",
+    "likes": 420
 }
 ###
-DELETE http://localhost:3003/api/blogs/604dc4cd29d2f83f20e2e93c
+DELETE http://localhost:3003/api/blogs/60584e9ee5ba44496ac16bc2
 Content-Type: application/json
 Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFscG8iLCJpZCI6IjYwNGI0YjA2OWM3MmEyNTlmMjFjOTAwOSIsImlhdCI6MTYxNTU1Mjg3MX0.RSIsffuvv4aW7AyYy-zhCipz_Eq2iAAgqN_8cQYPFvk
 
@@ -18,10 +18,12 @@ POST http://localhost:3003/api/users
 Content-Type: application/json
 
 {
-    "username": "balloo",
-    "name": "aaalpo",
-    "password": "testi" 
+    "username": "alpo-p",
+    "name": "Alpo Panula",
+    "password": "alpo-p" 
 }
+###
+^ id: 604f35510257cc5a8fc72ab0
 ###
 GET http://localhost:3003/api/users
 ###
